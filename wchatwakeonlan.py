@@ -40,7 +40,7 @@ def text_reply(msg):
 		print stdout.read()
 		wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 		itchat.send(wakeonlan_time+u'执行唤醒命令，启动 MAC 地址为14:dd:a9:ea:0b:96的主机，等待设备开机联网', toUserName='filehelper')
-		#由于开机需要一些时间去启动网络，所以这里等等60s
+		#由于开机需要一些时间去启动网络，所以这里等等15s
 		time.sleep(15)
 		#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64并转换为 int 类型传给sshConStatus
 		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -b 1,2')
