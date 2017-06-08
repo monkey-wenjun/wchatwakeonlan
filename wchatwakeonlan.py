@@ -35,8 +35,8 @@ def text_reply(msg):
 		stdin,stdout,stderr=ssh.exec_command('wakeonlan -i 192.168.1.0 14:dd:a9:ea:0b:96')
 		wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 		itchat.send(wakeonlan_time+u'执行唤醒，等待设备开机联网', toUserName='filehelper')
-		#由于开机需要一些时间去启动网络，所以这里等等20s	
-		time.sleep(20)
+		#由于开机需要一些时间去启动网络，所以这里等等60s	
+		time.sleep(60)
 		#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64传给sshConStatus
 		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1')
 		sshConStatus = stdout.read()
