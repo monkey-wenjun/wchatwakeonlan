@@ -29,7 +29,7 @@ def text_reply(msg):
 		ssh.load_system_host_keys(filename=filename)
 		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
-		#执行唤醒命令
+
 		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1|head -n 1')
 		sshCheckOpen = stdout.read()
 		sshCheckOpen =sshCheckOpen.strip('\n')
@@ -40,6 +40,7 @@ def text_reply(msg):
 			connect_ok_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			itchat.send(connect_ok_time+u'设备已经开机', toUserName='filehelper')
 		else:
+			#设备未开机，执行唤醒命令
 			ssh_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			itchat.send(ssh_time+u'开始连接远程主机', toUserName='filehelper')
 			stdin,stdout,stderr=ssh.exec_command('wakeonlan -i 192.168.1.0 14:dd:a9:ea:0b:96')
