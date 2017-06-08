@@ -18,8 +18,6 @@ filename = '/home/fangwenjun/.ssh/known_hosts'
 def text_reply(msg):
 	if msg['ToUserName'] != 'filehelper': return
 	if msg['Text'] ==  u'开机':
-		ssh_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-		itchat.send(ssh_time+u'开始连接远程主机', toUserName='filehelper')
 		paramiko.util.log_to_file('ssh_key-login.log')
 		privatekey = os.path.expanduser(key_file) 
 		try:
@@ -32,28 +30,40 @@ def text_reply(msg):
 		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
 		#执行唤醒命令
-		stdin,stdout,stderr=ssh.exec_command('wakeonlan -i 192.168.1.0 14:dd:a9:ea:0b:96')
-		wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-		itchat.send(wakeonlan_time+u'执行唤醒，等待设备开机联网', toUserName='filehelper')
-		#由于开机需要一些时间去启动网络，所以这里等等60s	
-		time.sleep(60)
-		#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64传给sshConStatus
 		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1')
-		sshConStatus = stdout.read()
-		sshConStatus =sshConStatus.strip('\n')
-		print type(sshConStatus)
-		print sshConStatus
+		sshCheckOpen = stdout.read()
+		sshCheckOpen =sshCheckOpen.strip('\n')
+		print type(sshCheckOpen)
+		print sshCheckOpen
 		#进行判断，如果为64，则说明 ping 成功，设备已经联网，可以进行远程连接了，否则发送失败消息
-		if sshConStatus == '64':
+		if sshCheckOpen == '64':
 			connect_ok_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-			itchat.send(connect_ok_time+u'设备唤醒成功，您可以远程连接了', toUserName='filehelper')
+			itchat.send(connect_ok_time+u'设备已经开机', toUserName='filehelper')
 		else:
-			connect_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-			itchat.send(connect_err_time+u'设备唤醒失败，请检查设备是否连接电源', toUserName='filehelper')
-		ssh.close()
-		#在网站根目录创建一个空文件，命名为 shutdown
-		os.system('touch /www/shutdown')
-		print '执行开机消息成功'
+			ssh_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+			itchat.send(ssh_time+u'开始连接远程主机', toUserName='filehelper')
+			stdin,stdout,stderr=ssh.exec_command('wakeonlan -i 192.168.1.0 14:dd:a9:ea:0b:96')
+			wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+			itchat.send(wakeonlan_time+u'执行唤醒，等待设备开机联网', toUserName='filehelper')
+			#由于开机需要一些时间去启动网络，所以这里等等60s	
+			time.sleep(60)
+			#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64传给sshConStatus
+			stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1')
+			sshConStatus = stdout.read()
+			sshConStatus =sshConStatus.strip('\n')
+			print type(sshConStatus)
+			print sshConStatus
+			#进行判断，如果为64，则说明 ping 成功，设备已经联网，可以进行远程连接了，否则发送失败消息
+			if sshConStatus == '64':
+				connect_ok_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+				itchat.send(connect_ok_time+u'设备唤醒成功，您可以远程连接了', toUserName='filehelper')
+			else:
+				connect_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+				itchat.send(connect_err_time+u'设备唤醒失败，请检查设备是否连接电源', toUserName='filehelper')
+			ssh.close()
+			#在网站根目录创建一个空文件，命名为 shutdown
+			os.system('touch /www/shutdown')
+			print '执行开机消息成功'
 
 	if	msg['Text'] ==  u'关机':
 		#删除网站根目录的shutdown 文件
