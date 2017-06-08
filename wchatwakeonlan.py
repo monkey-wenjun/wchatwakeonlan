@@ -45,12 +45,13 @@ def text_reply(msg):
 			wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			itchat.send(wakeonlan_time+u' 执行唤醒，等待设备开机联网', toUserName='filehelper')
 			#由于开机需要一些时间去启动网络，所以这里等等20s	
-			time.sleep(30)
+			time.sleep(60)
 			#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64传给sshConStatus
 			stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
 			sshConStatus = stdout.read()
 			sshConStatus =sshConStatus.strip('\n')
 			#进行判断，如果为64，则说明 ping 成功，设备已经联网，可以进行远程连接了，否则发送失败消息
+			print sshConStatus
 			if sshConStatus == '64':
 				connect_ok_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 				itchat.send(connect_ok_time+u' 设备唤醒成功，您可以远程连接了', toUserName='filehelper')
@@ -91,6 +92,7 @@ def text_reply(msg):
 			sshConStatus = stdout.read()
 			sshConStatus =sshConStatus.strip('\n')
 			#如果获取的值为空，则说明已经关机，否则关机失败
+			print sshConStatus
 			if sshConStatus != '64':
 				shutdown_success_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 				itchat.send(shutdown_success_err_time+u' 关机成功', toUserName='filehelper')
