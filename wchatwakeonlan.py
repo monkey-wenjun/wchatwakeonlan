@@ -67,7 +67,8 @@ def text_reply(msg):
 		#删除网站根目录的shutdown 文件
 		rmfile = os.system('rm -rf /www/shutdown')
 		if rmfile == 0:
-			print ' 执行关机消息成功'
+			shutdowninfo = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+			print shutdowninfo+' 执行关机消息成功'
 		shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 		itchat.send(shutdown_time+u' 正在关机....', toUserName='filehelper')
 		paramiko.util.log_to_file('ssh_key-login.log')
@@ -83,7 +84,7 @@ def text_reply(msg):
 		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
 		itchat.send(shutdown_time+u'正在确认设备是否完成关机操作，大约需要等待60s.', toUserName='filehelper')
 		#等等60秒后确认，因为关机需要一段时间，如果设置太短，可能网络还没断开
-		time.sleep(30)
+		time.sleep(60)
 		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
 		sshConStatus = stdout.read()
 		sshConStatus =sshConStatus.strip('\n')
