@@ -30,7 +30,7 @@ def text_reply(msg):
 		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
 
-		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1|head -n 1')
+		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
 		sshCheckOpen = stdout.read()
 		sshCheckOpen =sshCheckOpen.strip('\n')
 		#进行判断，如果为64，则说明 ping 成功，说明设备已经在开机状态，程序结束，否则执行唤醒
@@ -44,10 +44,10 @@ def text_reply(msg):
 			stdin,stdout,stderr=ssh.exec_command('wakeonlan -i 192.168.1.0 14:dd:a9:ea:0b:96')
 			wakeonlan_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			itchat.send(wakeonlan_time+u' 执行唤醒，等待设备开机联网', toUserName='filehelper')
-			#由于开机需要一些时间去启动网络，所以这里等等60s	
-			time.sleep(60)
+			#由于开机需要一些时间去启动网络，所以这里等等20s	
+			time.sleep(30)
 			#执行 ping 命令，-c 1 表示只 ping 一下，然后过滤有没有64，如果有则获取64传给sshConStatus
-			stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1|head -n 1')
+			stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
 			sshConStatus = stdout.read()
 			sshConStatus =sshConStatus.strip('\n')
 			#进行判断，如果为64，则说明 ping 成功，设备已经联网，可以进行远程连接了，否则发送失败消息
@@ -83,8 +83,8 @@ def text_reply(msg):
 		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
 		itchat.send(shutdown_time+u'正在确认设备是否完成关机操作，大约需要等待60s.', toUserName='filehelper')
 		#等等60秒后确认，因为关机需要一段时间，如果设置太短，可能网络还没断开
-		time.sleep(60)
-		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 1 | grep 64 | cut -d " " -f 1|head -n 1')
+		time.sleep(30)
+		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
 		sshConStatus = stdout.read()
 		sshConStatus =sshConStatus.strip('\n')
 		#如果获取的值为空，则说明已经关机，否则关机失败
