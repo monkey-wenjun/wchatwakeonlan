@@ -58,43 +58,48 @@ def text_reply(msg):
 				connect_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 				itchat.send(connect_err_time+u' 设备唤醒失败，请检查设备是否连接电源', toUserName='filehelper')
 			ssh.close()
-			#在网站根目录创建一个空文件，命名为 shutdown
+			#在目录创建一个空文件，命名为 shutdown
 			os.system('touch /www/shutdown')
 			createfile = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			print createfile+' 执行开机消息成功'
 
 	if	msg['Text'] ==  u'关机':
-		#删除网站根目录的shutdown 文件
-		rmfile = os.system('rm -rf /www/shutdown')
-		if rmfile == 0:
-			shutdowninfo = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-			print shutdowninfo+' 执行关机消息成功'
-		shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-		itchat.send(shutdown_time+u' 正在关机....', toUserName='filehelper')
-		paramiko.util.log_to_file('ssh_key-login.log')
-		privatekey = os.path.expanduser(key_file) 
-		try:
-		    key = paramiko.RSAKey.from_private_key_file(privatekey)
-		except paramiko.PasswordRequiredException:
-		    key = paramiko.RSAKey.from_private_key_file(privatekey,key_file_pwd)
-		 
-		ssh = paramiko.SSHClient()
-		ssh.load_system_host_keys(filename=filename)
-		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-		ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
-		itchat.send(shutdown_time+u'正在确认设备是否完成关机操作，大约需要等待60s.', toUserName='filehelper')
-		#等等60秒后确认，因为关机需要一段时间，如果设置太短，可能网络还没断开
-		time.sleep(60)
-		stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
-		sshConStatus = stdout.read()
-		sshConStatus =sshConStatus.strip('\n')
-		#如果获取的值为空，则说明已经关机，否则关机失败
-		if sshConStatus != '64':
-			shutdown_success_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-			itchat.send(shutdown_success_err_time+u'关机成功', toUserName='filehelper')
+		#判断文件是否存在，如果存在，则删除文件执行关机操作，否则说明设备已经关机，返回消息给客户端	
+		if os.path.exists('/www/shutdown'):
+			#删除shutdown 文件
+			rmfile = os.system('rm -rf /www/shutdown')
+			if rmfile == 0:
+				shutdowninfo = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+				print shutdowninfo+' 执行关机消息成功'
+			shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+			itchat.send(shutdown_time+u' 正在关机....', toUserName='filehelper')
+			paramiko.util.log_to_file('ssh_key-login.log')
+			privatekey = os.path.expanduser(key_file) 
+			try:
+			    key = paramiko.RSAKey.from_private_key_file(privatekey)
+			except paramiko.PasswordRequiredException:
+			    key = paramiko.RSAKey.from_private_key_file(privatekey,key_file_pwd)
+			 
+			ssh = paramiko.SSHClient()
+			ssh.load_system_host_keys(filename=filename)
+			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+			ssh.connect(hostname=hostname,username=username,pkey=key,port=port)
+			itchat.send(shutdown_time+u' 正在确认设备是否完成关机操作，大约需要等待60s.', toUserName='filehelper')
+			#等等60秒后确认，因为关机需要一段时间，如果设置太短，可能网络还没断开
+			time.sleep(60)
+			stdin,stdout,stderr=ssh.exec_command('ping 192.168.1.182 -c 5 | grep 64 | cut -d " " -f 1|tail -n 1')
+			sshConStatus = stdout.read()
+			sshConStatus =sshConStatus.strip('\n')
+			#如果获取的值为空，则说明已经关机，否则关机失败
+			if sshConStatus != '64':
+				shutdown_success_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+				itchat.send(shutdown_success_err_time+u' 关机成功', toUserName='filehelper')
+			else:
+				shutdown_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+				itchat.send(shutdown_err_time+u' 关机失败，请连接桌面检查客户端程序是否正常执行', toUserName='filehelper')
+			ssh.close()
 		else:
-			shutdown_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-			itchat.send(shutdown_err_time+u'关机失败，请连接桌面检查客户端程序是否正常执行', toUserName='filehelper')
-		ssh.close()
+				getinfotime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+				itchat.send(getinfotime+u' 关机失败,系统未开机', toUserName='filehelper')
 itchat.auto_login(hotReload=True,enableCmdQR=2)
 itchat.run()
