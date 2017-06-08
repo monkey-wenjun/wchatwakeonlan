@@ -35,7 +35,7 @@ def text_reply(msg):
 		sshCheckOpen =sshCheckOpen.strip('\n')
 		print type(sshCheckOpen)
 		print sshCheckOpen
-		#进行判断，如果为64，则说明 ping 成功，设备已经联网，可以进行远程连接了，否则发送失败消息
+		#进行判断，如果为64，则说明 ping 成功，说明设备已经在开机状态，程序结束，否则执行唤醒
 		if sshCheckOpen == '64':
 			connect_ok_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
 			itchat.send(connect_ok_time+u'设备已经开机', toUserName='filehelper')
