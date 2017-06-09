@@ -1,10 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# 作者:阿文
+# 时间: 2017年6月9日更新
+# 博客:https://awen.me
+# 使用教程:https://awen.me/archives/920.html
 import itchat
 import paramiko
 import os
 import time
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
