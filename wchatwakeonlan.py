@@ -18,6 +18,13 @@ filename = '/home/fangwenjun/.ssh/known_hosts'
 def text_reply(msg):
 	if msg['ToUserName'] != 'filehelper': return
 	if msg['Text'] ==  u'开机':
+		#在目录创建一个空文件，命名为 shutdown
+		if os.path.exists('/www/shutdown'):
+			print '文件已存在'
+		else:
+			os.system('touch /www/shutdown')
+			createfile = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+			print createfile+' 执行开机消息成功'
 		paramiko.util.log_to_file('ssh_key-login.log')
 		privatekey = os.path.expanduser(key_file) 
 		try:
@@ -59,10 +66,7 @@ def text_reply(msg):
 				connect_err_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 				itchat.send(connect_err_time+u' 设备唤醒失败，请检查设备是否连接电源', toUserName='filehelper')
 			ssh.close()
-			#在目录创建一个空文件，命名为 shutdown
-			os.system('touch /www/shutdown')
-			createfile = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-			print createfile+' 执行开机消息成功'
+				
 
 	if	msg['Text'] ==  u'关机':
 		#判断文件是否存在，如果存在，则删除文件执行关机操作，否则说明设备已经关机，返回消息给客户端	
@@ -102,6 +106,7 @@ def text_reply(msg):
 			ssh.close()
 		else:
 				getinfotime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
-				itchat.send(getinfotime+u' 关机失败,系统未开机', toUserName='filehelper')
+				itchat.send(getinfotime+u' 提示：您的设备未开机', toUserName='filehelper')
+				
 itchat.auto_login(hotReload=True,enableCmdQR=2)
 itchat.run()
